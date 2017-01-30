@@ -1,4 +1,5 @@
 import numpy as np
+import linear_solver
 
 # Define some constants.
 D = 1.          # The diffusion coefficient. 
@@ -11,7 +12,7 @@ k_B = 1.38e-23  # The Boltzmann constant.
 C_0 = 1.        # Temporary value. 
 
 # -----------------------------------------------------------------------------
-# Function to calculate the condenstation & evaporation rates.
+# Function to calculate the condensation & evaporation rates.
 # Will return to this later, once some sort of matrix system is set up.
 # -----------------------------------------------------------------------------
 
@@ -60,5 +61,7 @@ M[0,0] = -2*beta(1, C_1)
 M[0,1] = 2*alpha(2) - beta(2, C_0)         # Sort out first row of the matrix.
 for i in range(2, n_class-1):
     M[0, i] = i
+#M[0, n_class-1] = alpha(4)
 
 print M
+print np.linalg.inv(M)s
