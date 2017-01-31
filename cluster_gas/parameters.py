@@ -1,5 +1,4 @@
 import numpy as np
-import linear_solver
 
 # Define some constants.
 D = 1.          # The diffusion coefficient. 
@@ -36,32 +35,5 @@ def alpha(n):  # Calculate evaporation rate from (n+1) clusters.
     #return beta(n, 1.)*C_0*np.exp(exponent)
     return 6.
 
-# -----------------------------------------------------------------------------
-# Setup the matrix for use in matrix equation.
-# -----------------------------------------------------------------------------
-
-# Work within the small cluster regime, for now.
-
-n_class = 6
-
-M = np.zeros(shape=(n_class, n_class))
-
-# We need to iterate across the rows, filling in coefficients, as required.
-
-C_1 = 0.1
-for i in range(1, n_class-1):
-    M[i-1, i-2] = beta(i-1, C_1)           # The lower diagonal components.
-    M[i, i] = -(beta(i, C_1) + alpha(i))   # The diagonal components.
-    M[i, i+1] = alpha(i)                   # The upper diagonal components.
-
-M[n_class-1, n_class-1] = -alpha(n_class-1)     # Final diagonal.
-M[n_class-1, n_class-2] = beta(n_class-2, C_1)  # Final lower diagonal.
-M[0,0] = -2*beta(1, C_1)
-
-M[0,1] = 2*alpha(2) - beta(2, C_0)         # Sort out first row of the matrix.
-for i in range(2, n_class-1):
-    M[0, i] = i
-#M[0, n_class-1] = alpha(4)
-
-print M
-print np.linalg.inv(M)s
+#n_class = 6
+#M = update_matrix(n_class=n_class)
