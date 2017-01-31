@@ -5,10 +5,10 @@ import numpy as np
 # using the methods supplied by linear_solver.
 # -----------------------------------------------------------------------------
 
-def RK4(L, x, step_size, n_iter):
+def RK4(L, x, h, n_iter):
     ''' Arguments: Update matrix for system to be solved, L.
         Numpy array of initial conditions, x.
-        Step size increment in time, step_size.
+        Step size increment in time, h.
         No. of iteraions to perform, n_iter.'''
 
     soln = []
@@ -24,15 +24,3 @@ def RK4(L, x, step_size, n_iter):
         soln.append(np.append(x, n*h))
 
     return np.asarray(soln)
-
-#Example of RK4 for a simple pendulum.
-'''D_hat = 0.2
-theta_0 = 0.1
-y = np.array([0,theta_0])
-
-L = np.array([[-D_hat,-1],[1,0]])
-
-import matplotlib.pyplot as plt
-soln = RK4(L, y, step_size=0.02, n_iter=500)
-plt.plot(soln[:,2],soln[:,1])
-plt.show()'''
