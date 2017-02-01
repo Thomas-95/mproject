@@ -7,28 +7,29 @@ import numpy as np
 # -----------------------------------------------------------------------------
 
 # Define some constants.
-D = 1.          # The diffusion coefficient. 
-omega = 1.      # The monomer volume.
-gamma = 1.      # The jump frequency.
-T = 273.        # The temperature of the system. 
-d_jump = 1.     # The jump distance for monomer to attach to cluster. 
-k_B = 1.38e-23  # The Boltzmann constant.
-#C_0 = N_0/N_s   # Fraction of accessible sites. 
-C_0 = 1.        # Temporary value. 
-C_1 = 1.
+D = 2.32e-9            # The mass diffusion coefficient (298.16K, 1atm).
+omega = 2.992e-29      # The monomer volume, taken as vol of one water molecule.
+k_B = 1.38e-23         # The Boltzmann constant. 
+T = 273.               # The temperature of the system. 
+gamma = 1.             # The jump frequency.
+d_jump = 1.            # The jump distance for monomer to attach to cluster.
+C_0 = 1.               # All sites are available for homogeneous nucleation. 
+C_1 = 1.               # Initial condition for C_1, conc. of monomers.
 
 
-def beta(n, C_1=C_1):  # C_1 is monomer concentration, n is the class of clusters. 
+def beta(n, C_1=C_1):  # n is the class of clusters. 
 
     R_n = ((3*n*omega)/(4*np.pi))**(1./3.)
     kappa = D/(gamma*d_jump)
 
-    #return 4*np.pi*(R_n**2/(R_n + kappa))*(D/omega)*C_1
-    return .1
+    return 4*np.pi*(R_n**2/(R_n + kappa))*(D/omega)*C_1
 
-def sigma(n):   # Calculate surface free energy barrier. 
+def sigma(n):          # Surface free energy - generalised capillary approx.
 
-    return 1.
+    sigma_const = 1.   # Find the actual value of this. 
+    n_0 = 1.           # Some parameter.
+
+    return sigma_const*(1 + (n_0/float(n))**(1./3.))**(-2)
 
 def alpha(n):  # Calculate evaporation rate from (n+1) clusters.
 
@@ -36,5 +37,4 @@ def alpha(n):  # Calculate evaporation rate from (n+1) clusters.
                (((n+1)**(2./3.)*sigma(n+1)  - \
                n**(2./3.)*sigma(n) - sigma(1))) / (k_B*T)
 
-    #return beta(n, 1.)*C_0*np.exp(exponent)
-    return 1.
+    return beta(n, 1.)*C_0*np.exp(exponent)

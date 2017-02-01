@@ -13,5 +13,5 @@ if __name__ == "__main__":
     plt.plot(soln[:,2],soln[:,1])
     plt.show()'''
 
-    M = generate_matrix.update_matrix(n_class=10)
+    M = generate_matrix.update_matrix(n_class=4)
     print M
