@@ -23,7 +23,8 @@ def beta(n, C_1=C_1):  # C_1 is monomer concentration, n is the class of cluster
     R_n = ((3*n*omega)/(4*np.pi))**(1./3.)
     kappa = D/(gamma*d_jump)
 
-    return 4*np.pi*(R_n**2/(R_n + kappa))*(D/omega)*C_1
+    #return 4*np.pi*(R_n**2/(R_n + kappa))*(D/omega)*C_1
+    return .1
 
 def sigma(n):   # Calculate surface free energy barrier. 
 

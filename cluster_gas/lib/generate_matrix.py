@@ -6,27 +6,32 @@ from parameters import *
 # Work within the small cluster regime, for now.
 # -----------------------------------------------------------------------------
 
+def tridiag(a, b, c, k1=-1, k2=0, k3=1):
+    return np.diag(a, k1) + np.diag(b, k2) + np.diag(c, k3)
+
 def update_matrix(n_class):
 
-    '''We iterate across the rows, filling in coefficients, as required.'''
+    '''We set the diagonal values, then the lower & upper diagonals, then the 
+       first row.'''
     # These coefficients depend on C_1, so must be updated at each iteration. 
     # FIXME This capacity does not currently exist.
 
-    M = np.zeros(shape=(n_class, n_class))
+    # Rather than recalculating the same values, it would be better to calculate
+    # them all at once then access the values - I am recalculating the same
+    # values, at times.
 
+    diags = [0 for i in range(n_class)]
+    lower_diags = [beta(i) for i in range(n_class-1)]
+    upper_diags = [alpha(i) for i in range(n_class-1)]
+
+    diags[-1] = -alpha(4)
     for i in range(1, n_class-1):
-        M[i-1, i-2] = beta(i-1, C_1)             # Lower diagonal components.
-        M[i, i]     = -(beta(i, C_1) + alpha(i)) # Diagonal components.
-        M[i, i+1]   = alpha(i)                   # Upper diagonal components.
+        diags[i] = -(beta(i) + alpha(i)) 
 
-    M[n_class-1, n_class-1] = -alpha(n_class-1)     # Final diagonal.
-    M[n_class-1, n_class-2] = beta(n_class-2, C_1)  # Final lower diagonal.
-    M[0,0] = -2*beta(1, C_1)
-    
-    M[0,1] = 2*alpha(2) - beta(2, C_0)           # Sort out first row of matrix.
-    for i in range(2, n_class-1):
-        M[0, i] = i
+    M = tridiag(lower_diags, diags, upper_diags)
 
-    M[0, n_class-1] = alpha(4)
+    M[0][1:-1] += alpha(i) - beta(i)
+    M[0,0] = -2*beta(i)
+    M[0, -1] = alpha(n_class)
 
     return M
