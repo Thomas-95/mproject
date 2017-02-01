@@ -21,12 +21,12 @@ def update_matrix(n_class):
     # values, at times.
 
     diags = [0 for i in range(n_class)]
-    lower_diags = [beta(i) for i in range(n_class-1)]
-    upper_diags = [alpha(i) for i in range(n_class-1)]
+    lower_diags = [beta(i+1) for i in range(n_class-1)]   # n+1 for 0 indexing.
+    upper_diags = [alpha(i+1) for i in range(n_class-1)]
 
-    diags[-1] = -alpha(4)
+    diags[-1] = -alpha(n_class)
     for i in range(1, n_class-1):
-        diags[i] = -(beta(i) + alpha(i)) 
+        diags[i] = -(beta(i+1) + alpha(i+1)) 
 
     M = tridiag(lower_diags, diags, upper_diags)
 
