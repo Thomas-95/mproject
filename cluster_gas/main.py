@@ -1,5 +1,5 @@
 import numpy as np
-from lib import ODE_int, generate_matrix
+from lib import ODE_int, generate_matrix, parameters
 import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
@@ -13,5 +13,14 @@ if __name__ == "__main__":
     plt.plot(soln[:,2],soln[:,1])
     plt.show()'''
 
-    M = generate_matrix.update_matrix(n_class=4)
-    print M
+    temps = np.linspace(263.15, 273.10, 1000)
+    radii = [parameters.critical_radius(T) for T in temps]
+    def reciprocal(t):
+        return 100./(-t+273.15)
+    plt.plot(temps, radii, 'g', label="n*(T)")
+    plt.plot(temps, reciprocal(temps), 'r--', label="f(T)=1/T")
+    plt.axvline(x=273.15, label="T=273.15K")
+    plt.xlabel("Temperature of the system (K)")
+    plt.ylabel("Critical Cluster size")
+    plt.legend(loc=2)
+    plt.show()

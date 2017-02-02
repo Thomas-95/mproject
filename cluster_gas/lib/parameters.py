@@ -10,11 +10,13 @@ import numpy as np
 D = 2.32e-9            # The mass diffusion coefficient (298.16K, 1atm).
 mon_vol = 2.992e-29    # The monomer volume, taken as vol of one water molecule.
 k_B = 1.38e-23         # The Boltzmann constant. 
-T = 273.15             # The temperature of the system. 
+T = 272.85             # The temperature of the system. 
 jump_freq = 1.         # The jump frequency.
 d_jump = 1.            # The jump distance for monomer to attach to cluster.
 C_0 = 1.               # All sites are available for homogeneous nucleation. 
 C_1 = 1.               # Initial condition for C_1, conc. of monomers.
+
+sigma_const = (28.0 + (T-273.15)/4.)*1e-4      # -36 < T < 0 Celcius.
 
 
 def beta(n, C_1=C_1):  # n is the class of clusters. 
@@ -26,8 +28,7 @@ def beta(n, C_1=C_1):  # n is the class of clusters.
 
 def sigma(n):          # Surface free energy in generalised capillary approx.
 
-    sigma_const = (28.0 + (T-273.15)/4.)*1e-4      # -36 < T < 0 Celcius.
-    n_0 = ((32e-30*np.pi)/(3*mon_vol))**(1./3.)
+    n_0 = ((32e-30*np.pi)/(3*mon_vol))**(1./3.)    # Tolman, 1949.
 
     return sigma_const*(1 + (n_0/float(n))**(1./3.))**-2
 
@@ -38,3 +39,17 @@ def alpha(n):  # Calculate evaporation rate from (n+1) clusters.
                n**(2./3.)*sigma(n) - sigma(1))) / (k_B*T)
 
     return beta(n, 1.)*C_0*np.exp(exponent)
+
+def critical_radius(T=T):
+
+    assert(T < 273.15), "System not supercooled: please lower the temperature."
+
+    L = 333.55
+    mon_mass = 2.992e-23  # mass of water molecule
+    T_m = 273.15
+    
+    G_nuc = L*mon_mass*((T-T_m)/T_m)
+
+    return -(2./3.)*(36*np.pi*mon_vol**2)**(1./3.)*(sigma_const/G_nuc)
+
+# Implement a binary search algorithm to see where alpha = beta to check above.
