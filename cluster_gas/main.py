@@ -32,15 +32,17 @@ if __name__ == "__main__":
     C_init[0] = 1.
     timestep = 0.2e-13
     n_iter = 8000
+    times = np.linspace(0, n_iter*timestep, n_iter)
     soln = ODE_int.RK4(M, C_init, timestep, n_iter)
-    print soln
-    plt.figure(1)
+    '''plt.figure(1)
     plt.plot(soln[:,0])
     plt.plot(soln[:,1])
     plt.plot(soln[:,2])
     plt.plot(soln[:,3])
-    plt.plot(soln[:,4])
+    plt.plot(soln[:,4])'''
     plt.figure(2)
     plt.title("Total mass of clusters over time.")
-    plt.plot(soln[:,0]+2*soln[:,1]+3*soln[:,2]+4*soln[:,3]+5*soln[:,4])
+    plt.ylabel("Total ass of clusters.")
+    plt.xlabel("Time (s)")
+    plt.plot(times, soln[:,0]+2*soln[:,1]+3*soln[:,2]+4*soln[:,3]+5*soln[:,4])
     plt.show()
