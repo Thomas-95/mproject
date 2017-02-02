@@ -7,15 +7,15 @@ import numpy as np
 # -----------------------------------------------------------------------------
 
 # Define some constants.
-D = 2.32e-9            # The mass diffusion coefficient (298.16K, 1atm).
-mon_vol = 2.992e-29    # The monomer volume, taken as vol of one water molecule.
-k_B = 1.38e-23         # The Boltzmann constant. 
-T = 272.85             # The temperature of the system. 
-jump_freq = 1.         # The jump frequency.
-d_jump = 1.            # The jump distance for monomer to attach to cluster.
+D = 2.32e-9            # Mass diffusion coefficient (298.16K, 1atm).
+mon_vol = 2.992e-29    # Monomer volume, taken as vol of one water molecule.
+k_B = 1.38e-23         # Boltzmann constant. 
+T = 272.85             # Temperature of the system. 
+jump_freq = 1.e13      # Jump freq. taken as vibration freq of water molecule.
+d_jump = 2.5e-10       # Jump distance for monomer to attach to cluster.
+                       # Taken as length of Hydrogen bond.
 C_0 = 1.               # All sites are available for homogeneous nucleation. 
 C_1 = 1.               # Initial condition for C_1, conc. of monomers.
-
 sigma_const = (28.0 + (T-273.15)/4.)*1e-4      # -36 < T < 0 Celcius.
 
 
@@ -41,13 +41,11 @@ def alpha(n):  # Calculate evaporation rate from (n+1) clusters.
     return beta(n, 1.)*C_0*np.exp(exponent)
 
 def critical_radius(T=T):
-
     assert(T < 273.15), "System not supercooled: please lower the temperature."
 
     L = 333.55
     mon_mass = 2.992e-23  # mass of water molecule
     T_m = 273.15
-    
     G_nuc = L*mon_mass*((T-T_m)/T_m)
 
     return -(2./3.)*(36*np.pi*mon_vol**2)**(1./3.)*(sigma_const/G_nuc)
