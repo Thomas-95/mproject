@@ -3,7 +3,6 @@ import numpy as np
 # -----------------------------------------------------------------------------
 # Module for calculating the condensation & evaporation rates, given the
 # parameters with which the system is set up. 
-# FIXME Most of these parameters are yet to be properly calculated. 
 # -----------------------------------------------------------------------------
 
 # Define some constants.
@@ -16,12 +15,11 @@ d_jump = 2.5e-10       # Jump distance for monomer to attach to cluster.
                        # Taken as length of Hydrogen bond.
 #jump_freq = 1.        # COULD THESE BE FITTED EMPIRICALLY?
 #d_jump = 1.
-C_0 = 1.               # All sites are available for homogeneous nucleation. 
-C_1 = 1.               # Initial condition for C_1, conc. of monomers.
+C_0 = 1.               # All sites are available for homogeneous nucleation.
 sigma_const = (28.0 + (T-273.15)/4.)*1e-4      # -36 < T < 0 Celcius.
 
 
-def beta(n, C_1=C_1):  # n is the class of clusters. 
+def beta(n, C_1):  # n is the class of clusters. 
 
     R_n = ((3*n*mon_vol)/(4*np.pi))**(1./3.)
     kappa = D/(jump_freq*d_jump)
