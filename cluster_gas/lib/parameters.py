@@ -14,6 +14,8 @@ T = 272.85             # Temperature of the system.
 jump_freq = 1.e13      # Jump freq. taken as vibration freq of water molecule.
 d_jump = 2.5e-10       # Jump distance for monomer to attach to cluster.
                        # Taken as length of Hydrogen bond.
+#jump_freq = 1.        # COULD THESE BE FITTED EMPIRICALLY?
+#d_jump = 1.
 C_0 = 1.               # All sites are available for homogeneous nucleation. 
 C_1 = 1.               # Initial condition for C_1, conc. of monomers.
 sigma_const = (28.0 + (T-273.15)/4.)*1e-4      # -36 < T < 0 Celcius.
