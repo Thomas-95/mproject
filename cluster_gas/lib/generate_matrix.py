@@ -29,7 +29,7 @@ def update_matrix(n_class, C_1):
     M = tridiag(lower_diags, diags, upper_diags)
 
     M[0][1:-1] += alpha(i) - beta(i, C_1)
-    M[0,0] = -2*beta(i, C_1)
+    M[0,0] = -2*beta(1, C_1)
     M[0, -1] = alpha(n_class)
 
     return M
