@@ -75,6 +75,7 @@ class ClusterSystem():
         diags = [0 for i in range(self.n_class)]
         lower_diags = [self.beta(i+1, C_1) for i in range(self.n_class-1)]
         upper_diags = [self.alpha(i+1) for i in range(self.n_class-1)]
+        upper_diags = [self.alpha(i+2) for i in range(self.n_class-1)]
 
         diags[-1] = -self.alpha(self.n_class)
         for i in range(1, self.n_class-1):
