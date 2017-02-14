@@ -85,6 +85,7 @@ class ClusterSystem():
 
         M[0][1:-1] += self.alpha(i) - self.beta(i, C_1)
         M[0,0]      = -2*self.beta(1, C_1)
+        M[0][1:-1] += self.alpha(i+1) - self.beta(i, C_1)
         M[0, -1]    = self.alpha(self.n_class)
     
         return M
