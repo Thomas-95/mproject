@@ -39,6 +39,7 @@ class ClusterSystem():
     def beta(self, n, C_1):  # n = the class of clusters, C_1 is monomer conc.
 
         R_n = ((3*n*self.mon_vol)/(4*np.pi))**(1./3.)
+        print n
 
         return 4*np.pi*(R_n**2/(R_n + self.kappa))*(self.D/self.mon_vol)*C_1  
       
@@ -74,18 +75,17 @@ class ClusterSystem():
     
         diags = [0 for i in range(self.n_class)]
         lower_diags = [self.beta(i+1, C_1) for i in range(self.n_class-1)]
-        upper_diags = [self.alpha(i+1) for i in range(self.n_class-1)]
         upper_diags = [self.alpha(i+2) for i in range(self.n_class-1)]
 
-        diags[-1] = -self.alpha(self.n_class)
+        '''diags[-1] = -self.alpha(self.n_class)
         for i in range(1, self.n_class-1):
-            diags[i] = -(self.beta(i+1, C_1) + self.alpha(i+1))
+            diags[i] = -(self.beta(i+1, C_1) + self.alpha(i+1))'''
 
         M = self.tridiag(lower_diags, diags, upper_diags)
 
-        M[0][1:-1] += self.alpha(i) - self.beta(i, C_1)
+        #M[0][1:-1] += self.alpha(i+1) - self.beta(i, C_1)
+        M[0][1:-1] += self.alpha(i+1) - self.beta(i+1, C_1)
         M[0,0]      = -2*self.beta(1, C_1)
-        M[0][1:-1] += self.alpha(i+1) - self.beta(i, C_1)
         M[0, -1]    = self.alpha(self.n_class)
     
         return M
