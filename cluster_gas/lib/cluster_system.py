@@ -96,7 +96,7 @@ class ClusterSystem():
 
     def solve_system(self, N_ITER):
         soln = [self.C_init]
-        times = np.linspace(0, 0.8e-12, N_ITER)
+        times = np.linspace(0, self.kappa, N_ITER)
     
         for t in times:
             M = self.generate_update_matrix(C_1=soln[-1][0])
