@@ -1,6 +1,11 @@
+from lib import cluster_system as cs
+
 if __name__ == "__main__":
 
-    from results import cluster_distribution
+    #from results import cluster_distribution
+    
+    system = cs.ClusterSystem(n_class=3, T=200.)
+    print system.generate_update_matrix(C_1=1.)
     
     # Check if system is in steady state:
     
