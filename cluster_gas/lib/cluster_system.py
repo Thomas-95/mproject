@@ -103,7 +103,6 @@ class ClusterSystem():
         for t in times:
             M = self.generate_update_matrix(C_1=soln[-1][0])
             x_new = ODE_int.RK4(M, soln[-1][0:-1], t, 1)[0]
-            #x_new[0] += (1-self.calc_mass(x_new))  # Add line to conserve mass?
             soln.append(x_new)
 
         self.soln = np.asarray(soln)
