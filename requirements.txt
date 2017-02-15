@@ -1,3 +1,2 @@
-numpy
-sys
+numpy>=1.9.1
 os
