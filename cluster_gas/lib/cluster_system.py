@@ -34,16 +34,18 @@ class ClusterSystem():
         self.C_init = np.zeros(shape=(n_class+1))
         self.C_init[0] = 1.0        # Set initial condition - all monomers.
         self.kappa = self.D/(self.jump_freq*self.d_jump)
+        self.mon_mass = 2.992e-26
         
         
     def beta(self, n, C_1):  # n = the class of clusters, C_1 is monomer conc.
 
         R_n = ((3*n*self.mon_vol)/(4*np.pi))**(1./3.)
 
-        return 4*np.pi*(R_n**2/(R_n + self.kappa))*(self.D/self.mon_vol)*C_1  
+        return 4*np.pi*(R_n**2/(R_n))*(self.D/self.mon_vol)*C_1
+        #return 4*np.pi*(R_n**2/(R_n + self.kappa))*(self.D/self.mon_vol)*C_1  
       
       
-    def sigma(self, n):      # Surface free energy in generalised capillary approx.
+    def sigma(self, n):      # Surface free energy, generalised capillary approx
 
         n_0 = ((32e-30*np.pi)/(3*self.mon_vol))**(1./3.)    # Tolman, 1949.
 
@@ -61,6 +63,20 @@ class ClusterSystem():
 
         return 4*np.pi*(R_n**2/(R_n + self.kappa)) * \
                (self.D/self.mon_vol)*np.exp(exponent)
+               
+    '''def beta(self, n, C_1):
+    
+        A = ((6*np.pi**0.5*n)/980)**(2./3.)
+        J = 1000*((self.k_B*self.T)/(2*np.pi*self.mon_mass))**0.5
+    
+        return J*A
+        
+    def alpha(self, n):
+    
+        A = ((6*np.pi**0.5*n)/980)**(2./3.)
+        J = 980*0.2*(1/(2*np.pi*self.mon_mass*(self.k_B*self.T)))**0.5
+    
+        return J*A'''
     
     
     @staticmethod
@@ -98,7 +114,8 @@ class ClusterSystem():
 
     def solve_system(self, N_ITER):
         soln = [self.C_init]
-        times = np.linspace(0, self.kappa, N_ITER)
+        #times = np.linspace(0, self.kappa, N_ITER)
+        times = np.linspace(0, 1e-50, N_ITER)
     
         for t in times:
             M = self.generate_update_matrix(C_1=soln[-1][0])
