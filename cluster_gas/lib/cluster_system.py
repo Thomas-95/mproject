@@ -1,20 +1,5 @@
 import numpy as np, ODE_int
 
-# To be done:
-
-# Could jump_freq, d_jump be fitted empirically?
-# Implement a binary search algorithm to see where alpha = beta.
-
-'''def critical_radius(T=T):
-    assert(T < 273.15), "System not supercooled: please lower the temperature."
-
-    L = 333.55
-    mon_mass = 2.992e-23  # mass of water molecule
-    T_m = 273.15
-    G_nuc = L*mon_mass*((T-T_m)/T_m)
-
-    return -(2./3.)*(36*np.pi*mon_vol**2)**(1./3.)*(sigma_const/G_nuc)'''
-
 
 class ClusterSystem():
 
@@ -45,7 +30,7 @@ class ClusterSystem():
         #return 4*np.pi*(R_n**2/(R_n + self.kappa))*(self.D/self.mon_vol)*C_1  
       
       
-    def sigma(self, n):      # Surface free energy, generalised capillary approx
+    def sigma(self, n):      # Surface free energy, gen. capillary approx.
 
         n_0 = ((32e-30*np.pi)/(3*self.mon_vol))**(1./3.)    # Tolman, 1949.
 
@@ -112,10 +97,10 @@ class ClusterSystem():
         return sum((index+1)*value for index, value in enumerate(x))
 
 
-    def solve_system(self, N_ITER):
+    def solve_system(self, h, N_ITER):
         soln = [self.C_init]
         #times = np.linspace(0, self.kappa, N_ITER)
-        times = np.linspace(0, 1e-50, N_ITER)
+        times = np.linspace(0, h*N_ITER, N_ITER)
     
         for t in times:
             M = self.generate_update_matrix(C_1=soln[-1][0])
