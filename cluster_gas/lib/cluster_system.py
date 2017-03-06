@@ -18,7 +18,6 @@ class ClusterSystem():
         self.sigma_const = (28.0 + (T-273.15)/4.)*1e-4    # -36 < T < 0 Celcius.
         self.C_init = np.zeros(shape=(n_class+1))
         self.C_init[0] = 1.0        # Set initial condition - all monomers.
-        self.kappa = self.D/(self.jump_freq*self.d_jump)
         self.mon_mass = 2.992e-26
         
         
@@ -27,7 +26,8 @@ class ClusterSystem():
         R_n = ((3*n*self.mon_vol)/(4*np.pi))**(1./3.)
 
         return 4*np.pi*(R_n**2/(R_n))*(self.D/self.mon_vol)*C_1
-        #return 4*np.pi*(R_n**2/(R_n + self.kappa))*(self.D/self.mon_vol)*C_1  
+        #return 4*np.pi*(R_n**2/(R_n + self.kappa))*(self.D/self.mon_vol)*C_1 
+        # Assume diffusive regime - neglect kappa. 
       
       
     def sigma(self, n):      # Surface free energy, gen. capillary approx.
@@ -46,8 +46,9 @@ class ClusterSystem():
                
         R_n = ((3*n*self.mon_vol)/(4*np.pi))**(1./3.)
 
-        return 4*np.pi*(R_n**2/(R_n + self.kappa)) * \
-               (self.D/self.mon_vol)*np.exp(exponent)
+        #return 4*np.pi*(R_n**2/(R_n + self.kappa)) * \
+               #(self.D/self.mon_vol)*np.exp(exponent)
+        return 4*np.pi*(R_n**2/(R_n)) * (self.D/self.mon_vol)*np.exp(exponent)
                
     '''def beta(self, n, C_1):
     
@@ -97,14 +98,26 @@ class ClusterSystem():
         return sum((index+1)*value for index, value in enumerate(x))
 
 
-    def solve_system(self, h, N_ITER):
+    def solve_system(self, h, N_ITER, fast=False):
+        ''' Solve the system, given C_init. fast=True will return ONLY the final
+            distributions, not a distribution for each timestep.
+            Difference is minimal. '''
         soln = [self.C_init]
-        #times = np.linspace(0, self.kappa, N_ITER)
         times = np.linspace(0, h*N_ITER, N_ITER)
-    
-        for t in times:
-            M = self.generate_update_matrix(C_1=soln[-1][0])
-            x_new = ODE_int.RK4(M, soln[-1][0:-1], t, 1)[0]
-            soln.append(x_new)
+        
+        if fast:
+            x_new = self.C_init
+            for t in times:
+                M = self.generate_update_matrix(C_1=x_new[0])
+                x_new = ODE_int.RK4(M, x_new[:-1], t, 1)[0]
+            self.soln = np.asarray([x_new])
+ 
+        else:
+            for t in times:
+                M = self.generate_update_matrix(C_1=soln[-1][0])
+                x_new = ODE_int.RK4(M, soln[-1][0:-1], t, 1)[0]
+                soln.append(x_new)
+                
+            self.soln = np.asarray(soln)            
 
-        self.soln = np.asarray(soln)
+        
