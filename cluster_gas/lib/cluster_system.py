@@ -10,7 +10,6 @@ class ClusterSystem():
                        
         self.n_class = n_class      # Number of cluster sizes to sample.
         self.T = T                  # Temperature of the system. 
-        self.D = D                  # Mass diffusion coeff't (298.16K, 1atm).
         self.mon_vol = mon_vol      # Monomer volume = one water molecule vol.
         self.C_0 = 1.               # All sites poss for homogeneous nucleation.
         self.d_jump = d_jump        # Jump distance for mon to attach w/cluster.
@@ -18,17 +17,13 @@ class ClusterSystem():
         self.sigma_const = (28.0 + (T-273.15)/4.)*1e-4    # -36 < T < 0 Celcius.
         self.C_init = np.zeros(shape=(n_class+1))
         self.C_init[0] = 1.0        # Set initial condition - all monomers.
-        self.kappa = self.D/(self.jump_freq*self.d_jump)
         self.mon_mass = 2.992e-26
-        self.E=E
-        
-        
-    '''def beta(self, n, C_1):  # n = the class of clusters, C_1 is monomer conc.
-
-        R_n = ((3*n*self.mon_vol)/(4*np.pi))**(1./3.)
-
-        return 4*np.pi*(R_n**2/(R_n))*(self.D/self.mon_vol)*C_1'''
-        #return 4*np.pi*(R_n**2/(R_n + self.kappa))*(self.D/self.mon_vol)*C_1  
+        self.E = E                  # Electric field strength.
+        if E == 0.:
+            self.D = D
+        else:
+            r      = 2.5e-20
+            self.D = D*(1-np.exp(-(self.k_B*T)/(np.pi*r*(self.E**0.5)))) 
       
       
     def sigma(self, n):      # Surface free energy, gen. capillary approx.
@@ -36,46 +31,26 @@ class ClusterSystem():
         n_0 = ((32e-30*np.pi)/(3*self.mon_vol))**(1./3.)    # Tolman, 1949.
 
         return self.sigma_const*(1 + (n_0/float(n))**(1./3.))**-2
-          
-          
-    '''def alpha(self, n):      # Calculate evaporation rate from (n+1) clusters.
 
+               
+    def alpha(self, n):     
+        k_B = 1.35e-23 
+        mfp = 2.5e-10
         exponent = (36*np.pi*self.mon_vol**2)**(1./3.)        * \
                    (((n+1)**(2./3.)*self.sigma(n+1)           - \
                    n**(2./3.)*self.sigma(n) - self.sigma(1))) / \
-                   (self.k_B*self.T)
+                   (k_B*self.T)
                
         R_n = ((3*n*self.mon_vol)/(4*np.pi))**(1./3.)
 
-        return 4*np.pi*(R_n**2/(R_n + self.kappa)) * \
-               (self.D/self.mon_vol)*np.exp(exponent)'''
-               
-    def alpha(self, n):     
-        k_B = 1.35e-23   
-        r=2.5e-20
-        T=200.
-        C_0 = 1.
-        D=2.32e-9*(1-np.exp(-(k_B*T)/(np.pi*r*(self.E**0.5+1.e-50))))
-        mon_vol=2.992e-29
-        mfp=2.5e-10
-        exponent = (36*np.pi*mon_vol**2)**(1./3.)        * \
-        (((n+1)**(2./3.)*self.sigma(n+1)           - \
-        n**(2./3.)*self.sigma(n) - self.sigma(1))) / \
-        (k_B*T)
-               
-        R_n = ((3*n*mon_vol)/(4*np.pi))**(1./3.)
-
-        return 3*C_0*exponent*(np.pi)*D*R_n**2/(mfp*mon_vol)
+        return 3*exponent*(np.pi)*self.D*R_n**2/(mfp*self.mon_vol)
+        
         
     def beta(self, n, C_1):
-        k_B = 1.35e-23   
-        r=2.5e-20
-        T=200.
-        D=2.32e-9*(1-np.exp(-(k_B*T)/(np.pi*r*(self.E**0.5+1.e-50))))
-        mon_vol=2.992e-29
-        mfp=2.5e-10
-        R_n = ((3*n*mon_vol)/(4*np.pi))**(1./3.)
-        return 3*C_1*(np.pi)*D*R_n**2/(mfp*mon_vol)
+        k_B = 1.35e-23 
+        mfp = 2.5e-10
+        R_n = ((3*n*self.mon_vol)/(4*np.pi))**(1./3.)
+        return 3*C_1*(np.pi)*self.D*R_n**2/(mfp*self.mon_vol)
     
     
     @staticmethod
