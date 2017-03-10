@@ -19,9 +19,14 @@ cdef class ClusterSystem(object):
         self.C_init[0] = 3.35      # Set initial condition - all monomers.
         self.mon_mass = 2.992e-26
         self.k_B = 1.38e-23                  # Boltzmann constant.
+        
+        
+    cdef double R_n(self, n):
+        return ((3*n*self.mon_vol)/(4*np.pi))**(1./3.)
 
     cdef double beta(self, n, C_1):  # n = the class of clusters, C_1 is monomer conc.
 
+        cdef double R_n
         R_n = ((3*n*self.mon_vol)/(4*np.pi))**(1./3.)
 
         return 4*np.pi*(R_n**2/(R_n))*(self.D/self.mon_vol)*C_1
@@ -31,6 +36,7 @@ cdef class ClusterSystem(object):
       
     cdef double sigma(self, n):      # Surface free energy, gen. capillary approx.
 
+        cdef double n_0
         n_0 = ((32e-30*np.pi)/(3*self.mon_vol))**(1./3.)    # Tolman, 1949.
 
         return self.sigma_const*(1 + (n_0/float(n))**(1./3.))**-2
@@ -38,6 +44,8 @@ cdef class ClusterSystem(object):
           
     cdef double alpha(self, n):      # Calculate evaporation rate from (n+1) clusters.
 
+        cdef double exponent, R_n
+        
         exponent = (36*np.pi*self.mon_vol**2)**(1./3.)        * \
                    (((n+1)**(2./3.)*self.sigma(n+1)           - \
                    n**(2./3.)*self.sigma(n) - self.sigma(1))) / \
@@ -66,10 +74,6 @@ cdef class ClusterSystem(object):
         diags = np.zeros(self.n_class)
         lower_diags = np.zeros(self.n_class - 1)
         upper_diags = np.zeros(self.n_class - 1)
-        
-        
-        #lower_diags = np.array([self.beta(i+1, C_1) for i in xrange(self.n_class-1)])
-        #upper_diags = np.array([self.alpha(i+2) for i in xrange(self.n_class-1)])
         
         for i in xrange(self.n_class-1):
             diags[i]       = -(self.beta(i+1, C_1) + self.alpha(i+1))
