@@ -24,13 +24,13 @@ cdef class ClusterSystem(object):
         self.k_B = 1.38e-23                  # Boltzmann constant.
         
         
-    #cdef double R_n(self, n):
-        #return ((3*n*self.mon_vol)/(4*np.pi))**(1./3.)
+    cdef double R_n(self, n):
+        return ((3*n*self.mon_vol)/(4*np.pi))**(1./3.)
 
-    cdef double beta(self, n, C_1):  # n = the class of clusters, C_1 is monomer conc.
+    cdef double beta(self, n, C_1, R_n):  # n = the class of clusters, C_1 is monomer conc.
 
-        cdef double R_n
-        R_n = ((3*n*self.mon_vol)/(4*pi))**(1./3.)
+        #cdef double R_n
+        #R_n = ((3*n*self.mon_vol)/(4*pi))**(1./3.)
 
         return 4*pi* R_n *(self.D/self.mon_vol)*C_1
         #return 4*np.pi*(R_n**2/(R_n + self.kappa))*(self.D/self.mon_vol)*C_1 
@@ -45,16 +45,16 @@ cdef class ClusterSystem(object):
         return self.sigma_const*(1 + (n_0/float(n))**(1./3.))**-2
           
           
-    cdef double alpha(self, n):      # Calculate evaporation rate from (n+1) clusters.
+    cdef double alpha(self, n, R_n):      # Calculate evaporation rate from (n+1) clusters.
 
-        cdef double exponent, R_n
+        cdef double exponent#, R_n
         
         exponent = (36* pi * self.mon_vol**2)**(1./3.)        * \
                    (((n+1)**(2./3.)*self.sigma(n+1)           - \
                    n**(2./3.)*self.sigma(n) - self.sigma(1))) / \
                    (self.k_B*self.T)
                
-        R_n = ((3*n*self.mon_vol)/(4 * pi))**(1./3.)
+        #R_n = ((3*n*self.mon_vol)/(4 * pi))**(1./3.)
 
         #return 4*np.pi*(R_n**2/(R_n + self.kappa)) * \
                #(self.D/self.mon_vol)*np.exp(exponent)
@@ -73,26 +73,31 @@ cdef class ClusterSystem(object):
         #start_time = time.time()
         
         cdef int i
-        cdef np.ndarray diags, lower_diags, upper_diags
+        cdef np.ndarray diags, lower_diags, upper_diags, M
+        cdef double R_beta, R_alpha, R_n_class, R_i
+        R_n_class = self.R_n(self.n_class)
         
         diags = np.zeros(self.n_class)
         lower_diags = np.zeros(self.n_class - 1)
         upper_diags = np.zeros(self.n_class - 1)
         
         for i in xrange(self.n_class-1):
-            diags[i]       = -(self.beta(i+1, C_1) + self.alpha(i+1))
-            lower_diags[i] = self.beta(i+1, C_1)
-            upper_diags[i] = self.alpha(i+2)
+            R_beta         =   self.R_n(i+1)
+            R_alpha        =   self.R_n(i+2)
+            diags[i]       = -(self.beta(i+1, C_1, R_beta) + self.alpha(i+1, R_alpha))
+            lower_diags[i] =   self.beta(i+1, C_1, R_beta)
+            upper_diags[i] =   self.alpha(i+2, R_alpha)
 
-        diags[-1] = -self.alpha(self.n_class)
+        diags[-1] = -self.alpha(self.n_class, R_n_class)
         
         M = ClusterSystem.tridiag(lower_diags, diags, upper_diags)
         
         for i in xrange(1, self.n_class-1):
-            M[0][i] += self.alpha(i+1) - self.beta(i+1, C_1)
+            R_i      = self.R_n(i+1)
+            M[0][i] += self.alpha(i+1, R_i) - self.beta(i+1, C_1, R_i)
         
-        M[0,0]      = -2*self.beta(1, C_1)
-        M[0, -1]    = self.alpha(self.n_class)
+        M[0,0]      = -2*self.beta(1, C_1, self.R_n(1))
+        M[0, -1]    = self.alpha(self.n_class, R_n_class)
         
         #print "matrix maker time:", time.time() - start_time
     
@@ -132,7 +137,7 @@ cdef class ClusterSystem(object):
             #print "integrate time:", time.time() - start_time
             
         
-        return np.asarray(x_new)
+        return x_new
         
     def wrap_solve(self, h, N_ITER):
         return self.solve_system(h, N_ITER)
