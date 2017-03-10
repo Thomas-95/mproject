@@ -4,11 +4,21 @@ if __name__ == "__main__":
 
     #from results import cluster_distribution
     
-    n_class = 4
-    T = 200.
+    n_class = 5
+    T = 5.
+    h = 1e-50
+    N_ITER = 5e4
+    print N_ITER
+    
+    b = cs.ClusterSystem(n_class, T)
+    
+    import time
+    start_time = time.time()
+    b.solve_system(h, N_ITER)
+    print time.time() - start_time
   
   
-    system = cs.ClusterSystem(n_class=n_class, T=T)
+    '''system = cs.ClusterSystem(n_class=n_class, T=T)
     system.C_init[0] = 3.35e28  # Number of molecules in metre cubed of water
     
     import numpy as np
@@ -51,7 +61,7 @@ if __name__ == "__main__":
     print np.log(num_iters)
     print r_vals
     plt.semilogx(num_iters, r_vals)
-    plt.show()
+    plt.show()'''
     
     '''D = system.D
     d_jump = system.d_jump
