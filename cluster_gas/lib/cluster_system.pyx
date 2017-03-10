@@ -59,14 +59,24 @@ cdef class ClusterSystem(object):
     cdef np.ndarray generate_update_matrix(self, C_1):
         '''Function generating the matrix that describes our linear system. 
         Work within the small cluster regime, for now.'''
-    
-        diags = np.array([0 for i in range(self.n_class)])
-        lower_diags = np.array([self.beta(i+1, C_1) for i in range(self.n_class-1)])
-        upper_diags = np.array([self.alpha(i+2) for i in range(self.n_class-1)])
+        
+        cdef int i
+        cdef np.ndarray diags, lower_diags, upper_diags
+        
+        diags = np.zeros(self.n_class)
+        lower_diags = np.zeros(self.n_class - 1)
+        upper_diags = np.zeros(self.n_class - 1)
+        
+        
+        #lower_diags = np.array([self.beta(i+1, C_1) for i in xrange(self.n_class-1)])
+        #upper_diags = np.array([self.alpha(i+2) for i in xrange(self.n_class-1)])
+        
+        for i in xrange(self.n_class-1):
+            diags[i]       = -(self.beta(i+1, C_1) + self.alpha(i+1))
+            lower_diags[i] = self.beta(i+1, C_1)
+            upper_diags[i] = self.alpha(i+2)
 
         diags[-1] = -self.alpha(self.n_class)
-        for i in range(1, self.n_class-1):
-            diags[i] = -(self.beta(i+1, C_1) + self.alpha(i+1))
 
         M = ClusterSystem.tridiag(lower_diags, diags, upper_diags)
         
