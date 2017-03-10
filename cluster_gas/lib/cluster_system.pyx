@@ -1,6 +1,8 @@
 import numpy as np, ODE_int
 cimport numpy as np
 
+cdef double pi = np.pi
+
 
 cdef class ClusterSystem(object):
     
@@ -21,15 +23,15 @@ cdef class ClusterSystem(object):
         self.k_B = 1.38e-23                  # Boltzmann constant.
         
         
-    cdef double R_n(self, n):
-        return ((3*n*self.mon_vol)/(4*np.pi))**(1./3.)
+    #cdef double R_n(self, n):
+        #return ((3*n*self.mon_vol)/(4*np.pi))**(1./3.)
 
     cdef double beta(self, n, C_1):  # n = the class of clusters, C_1 is monomer conc.
 
         cdef double R_n
-        R_n = ((3*n*self.mon_vol)/(4*np.pi))**(1./3.)
+        R_n = ((3*n*self.mon_vol)/(4*pi))**(1./3.)
 
-        return 4*np.pi*(R_n**2/(R_n))*(self.D/self.mon_vol)*C_1
+        return 4*pi* R_n *(self.D/self.mon_vol)*C_1
         #return 4*np.pi*(R_n**2/(R_n + self.kappa))*(self.D/self.mon_vol)*C_1 
         # Assume diffusive regime - neglect kappa.
      
@@ -37,7 +39,7 @@ cdef class ClusterSystem(object):
     cdef double sigma(self, n):      # Surface free energy, gen. capillary approx.
 
         cdef double n_0
-        n_0 = ((32e-30*np.pi)/(3*self.mon_vol))**(1./3.)    # Tolman, 1949.
+        n_0 = ((32e-30 * pi)/(3*self.mon_vol))**(1./3.)    # Tolman, 1949.
 
         return self.sigma_const*(1 + (n_0/float(n))**(1./3.))**-2
           
@@ -46,16 +48,16 @@ cdef class ClusterSystem(object):
 
         cdef double exponent, R_n
         
-        exponent = (36*np.pi*self.mon_vol**2)**(1./3.)        * \
+        exponent = (36* pi * self.mon_vol**2)**(1./3.)        * \
                    (((n+1)**(2./3.)*self.sigma(n+1)           - \
                    n**(2./3.)*self.sigma(n) - self.sigma(1))) / \
                    (self.k_B*self.T)
                
-        R_n = ((3*n*self.mon_vol)/(4*np.pi))**(1./3.)
+        R_n = ((3*n*self.mon_vol)/(4 * pi))**(1./3.)
 
         #return 4*np.pi*(R_n**2/(R_n + self.kappa)) * \
                #(self.D/self.mon_vol)*np.exp(exponent)
-        return 4*np.pi*(R_n**2/(R_n)) * (self.D/self.mon_vol)*np.exp(exponent)
+        return 4 * pi * R_n * (self.D/self.mon_vol)*np.exp(exponent)
                
     
     
@@ -84,7 +86,7 @@ cdef class ClusterSystem(object):
 
         M = ClusterSystem.tridiag(lower_diags, diags, upper_diags)
         
-        for i in range(1, self.n_class-1):
+        for i in xrange(1, self.n_class-1):
             M[0][i] += self.alpha(i+1) - self.beta(i+1, C_1)
         
         M[0,0]      = -2*self.beta(1, C_1)
@@ -102,8 +104,10 @@ cdef class ClusterSystem(object):
         '''Solve the system, given C_init. fast=True will return ONLY the final
            distributions, not a distribution for each timestep.'''
         soln = [self.C_init]
+        
+        cdef np.ndarray times
+        cdef double t
         times = np.linspace(0, h*N_ITER, N_ITER)
-
 
         for t in times:
             M = self.generate_update_matrix(C_1=soln[-1][0])
