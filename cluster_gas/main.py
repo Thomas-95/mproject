@@ -4,7 +4,7 @@ from datetime import datetime
 if __name__ == "__main__":
 
     h = 1e-50
-    N_ITER = 1e6
+    N_ITER = 5e4
 
     b = cs.ClusterSystem(5,5)
     import time
@@ -14,7 +14,7 @@ if __name__ == "__main__":
     
     n_class = 50
     T = 100.
-
+    
 
     '''system = cs.ClusterSystem(n_class=n_class, T=T)
     system.C_init[0] = 3.35e28  # Number of molecules in metre cubed of water

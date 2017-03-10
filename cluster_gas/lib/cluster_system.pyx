@@ -1,12 +1,13 @@
-import numpy as np, ODE_int
+import numpy as np, time #,ODE_int
 cimport numpy as np
+from scipy.integrate import odeint
 
 cdef double pi = np.pi
 
 
 cdef class ClusterSystem(object):
     
-    cdef int n_class, soln
+    cdef int n_class
     cdef double T, D, mon_vol, sigma_const,  mon_mass, k_B
     cdef np.ndarray C_init
     #cdef double C_init[]
@@ -17,7 +18,7 @@ cdef class ClusterSystem(object):
         self.D = 2.32e-9                  # Mass diffusion coeff't (298.16K, 1atm).
         self.mon_vol = 2.992e-29      # Monomer volume = one water molecule vol.
         self.sigma_const = (28.0 + (self.T-273.15)/4.)*1e-4    # -36 < T < 0 Celcius.
-        self.C_init = np.zeros(shape=(self.n_class+1))
+        self.C_init = np.zeros(self.n_class+1)
         self.C_init[0] = 3.35      # Set initial condition - all monomers.
         self.mon_mass = 2.992e-26
         self.k_B = 1.38e-23                  # Boltzmann constant.
@@ -60,7 +61,6 @@ cdef class ClusterSystem(object):
         return 4 * pi * R_n * (self.D/self.mon_vol)*np.exp(exponent)
                
     
-    
     @staticmethod
     def tridiag(a, b, c, k1=-1, k2=0, k3=1):
         return np.diag(a, k1) + np.diag(b, k2) + np.diag(c, k3)
@@ -69,6 +69,8 @@ cdef class ClusterSystem(object):
     cdef np.ndarray generate_update_matrix(self, C_1):
         '''Function generating the matrix that describes our linear system. 
         Work within the small cluster regime, for now.'''
+        
+        #start_time = time.time()
         
         cdef int i
         cdef np.ndarray diags, lower_diags, upper_diags
@@ -83,7 +85,7 @@ cdef class ClusterSystem(object):
             upper_diags[i] = self.alpha(i+2)
 
         diags[-1] = -self.alpha(self.n_class)
-
+        
         M = ClusterSystem.tridiag(lower_diags, diags, upper_diags)
         
         for i in xrange(1, self.n_class-1):
@@ -91,6 +93,8 @@ cdef class ClusterSystem(object):
         
         M[0,0]      = -2*self.beta(1, C_1)
         M[0, -1]    = self.alpha(self.n_class)
+        
+        #print "matrix maker time:", time.time() - start_time
     
         return M
         
@@ -98,23 +102,37 @@ cdef class ClusterSystem(object):
     @staticmethod
     def calc_mass(x):
         return sum((index+1)*value for index, value in enumerate(x))
+        
+    @staticmethod    
+    def deriv(x, t, M): 
+        return np.dot(M, x)
 
 
     cdef np.ndarray solve_system(self, h, N_ITER):
         '''Solve the system, given C_init. fast=True will return ONLY the final
            distributions, not a distribution for each timestep.'''
-        soln = [self.C_init]
+        #soln = [self.C_init]
         
         cdef np.ndarray times
-        cdef double t
+        cdef float t
         times = np.linspace(0, h*N_ITER, N_ITER)
+        cdef np.ndarray M, x_new = self.C_init[:-1]
+        cdef tuple matrixtuple
 
-        for t in times:
+        '''for t in times:
             M = self.generate_update_matrix(C_1=soln[-1][0])
             x_new = ODE_int.RK4(M, soln[-1][0:-1], t, 1)[0]
-            soln.append(x_new)
+            soln.append(x_new)'''
+            
+        for t in times:
+            M = self.generate_update_matrix(C_1=x_new[0])
+            matrixtuple = (M,);
+            #start_time = time.time()
+            x_new = odeint(ClusterSystem.deriv, x_new, t, matrixtuple)[0]
+            #print "integrate time:", time.time() - start_time
+            
         
-        return np.asarray(soln)
+        return np.asarray(x_new)
         
     def wrap_solve(self, h, N_ITER):
         return self.solve_system(h, N_ITER)
