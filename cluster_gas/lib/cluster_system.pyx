@@ -12,14 +12,14 @@ cdef class ClusterSystem(object):
     cdef np.ndarray C_init
     #cdef double C_init[]
     
-    def __init__(self, nclass, temp):
+    def __init__(self, nclass, temp, C_init0=3.35e28):
         self.n_class = nclass      # Number of cluster sizes to sample.
         self.T = temp                 # Temperature of the system. 
         self.D = 2.32e-9                  # Mass diffusion coeff't (298.16K, 1atm).
         self.mon_vol = 2.992e-29      # Monomer volume = one water molecule vol.
         self.sigma_const = (28.0 + (self.T-273.15)/4.)*1e-4    # -36 < T < 0 Celcius.
         self.C_init = np.zeros(self.n_class+1)
-        self.C_init[0] = 3.35      # Set initial condition - all monomers.
+        self.C_init[0] = C_init0     # Set initial condition - all monomers.
         self.mon_mass = 2.992e-26
         self.k_B = 1.38e-23                  # Boltzmann constant.
         
@@ -129,11 +129,16 @@ cdef class ClusterSystem(object):
             x_new = ODE_int.RK4(M, soln[-1][0:-1], t, 1)[0]
             soln.append(x_new)'''
             
-        for t in times:
-            M = self.generate_update_matrix(C_1=x_new[0])
-            matrixtuple = (M,);
+        M = self.generate_update_matrix(C_1=x_new[0])
+        matrixtuple = (M,)
+        
+        x_new = odeint(ClusterSystem.deriv, x_new, times, matrixtuple)
+            
+        #for t in times:
+            #M = self.generate_update_matrix(C_1=x_new[0])
+            #matrixtuple = (M,);
             #start_time = time.time()
-            x_new = odeint(ClusterSystem.deriv, x_new, t, matrixtuple)[0]
+            #x_new = odeint(ClusterSystem.deriv, x_new, t, matrixtuple)[0]
             #print "integrate time:", time.time() - start_time
             
         

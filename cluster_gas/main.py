@@ -3,17 +3,37 @@ from datetime import datetime
 
 if __name__ == "__main__":
 
-    h = 1e-50
-    N_ITER = 5e4
-
-    b = cs.ClusterSystem(5,5)
+    h = 1e-60
+    N_ITER = 1e6
+    n_class = 10
+    T = 5.
+    nums = range(1, n_class+1)
+    
+    sys1 = cs.ClusterSystem(n_class, T)
     import time
     start_time = time.time()
-    soln = b.wrap_solve(h, N_ITER)
+    soln1 = sys1.wrap_solve(h, N_ITER)
     print time.time() - start_time
     
-    n_class = 50
-    T = 100.
+    sys2 = cs.ClusterSystem(n_class, T, 5.6e4)
+    soln2 = sys2.wrap_solve(h=h*6.022e23, N_ITER=N_ITER)
+    
+
+    print soln1[-1]
+    print soln2[-1]*6.022e23
+    
+    import matplotlib.pyplot as plt, numpy as np
+    plt.semilogy(nums, soln1[-1], label="system 1")
+    plt.semilogy(nums, soln2[-1]*6.022e23, label="system 2")
+    plt.legend()
+    plt.show()
+    
+    from scipy.stats import linregress as linr
+  
+    log_soln1 = np.log(soln1[-1])
+    log_soln2 = np.log(soln2[-1])
+    print linr(nums, log_soln1)
+    print linr(nums, log_soln2)
     
 
     '''system = cs.ClusterSystem(n_class=n_class, T=T)
