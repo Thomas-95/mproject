@@ -1,25 +1,51 @@
-from lib import cluster_system as cs
+from lib import cluster_system as cs, plot_system
+import numpy as np
 
 if __name__ == "__main__":
 
-    #from results import cluster_distribution
+    #from results import log_distributions
+    #from results import scaled_system
+    #from results import constant_update_matrix
     
-    system = cs.ClusterSystem(n_class=3, T=200.)
-    print system.generate_update_matrix(C_1=1.)
+    A = 6.022e23
+    h = 8e-40 * A
+    n_class = 50
+    nums = range(1, n_class+1)
+    T = 250
+    N_ITER = 3e8
+    N_RUNS = 10
     
-    # Check if system is in steady state:
+        
+    import matplotlib.pyplot as plt
+    plt.figure(1)
     
-    '''n=n_class
-    R_n = ((3*n*pr.mon_vol)/(4*np.pi))**(1./3.)
-    kappa = pr.D/(pr.jump_freq*pr.d_jump)
-    b_N = 4*np.pi*(R_n**2/(R_n + kappa))*(pr.D/pr.mon_vol) # From beta() funct.
     
-    exponent = (36*np.pi*pr.mon_vol**2)**(1./3.) * \
-               ((n_class)**(2./3.)*pr.sigma(n_class) - \
-               (2./3.)*pr.sigma(2.) - n_class*pr.sigma(1.))/(pr.k_B * pr.T)
-
-    print (b_N/np.exp(exponent)) * soln[-1][0]**n_class
-    print soln[-1][-2]'''
+    import time
+    start_time = time.time()
+    soln = np.zeros(n_class)
+    soln[0] = 5.6e4
     
-    #print b_1 * soln[-1][0]**2, pr.alpha(2) * soln[-1][1]
-    #print b_1 * soln[-1][0] * soln[-1][1], pr.alpha(3) * soln[-1][2]
+    from progressbar import ProgressBar
+    
+    pbar = ProgressBar()
+    for n in pbar(xrange(N_RUNS)):
+        system = cs.ClusterSystem(n_class, T, soln)
+        soln = system.wrap_solve(h, N_ITER)[-1]
+        if n%2 == 0:
+            plt.semilogy(nums, soln*A, label="Run %i"%(n+1))
+        
+    print "Time (s) to run simulation:", time.time() - start_time
+    print "Time (s) at simulation termination:", h * N_ITER * N_RUNS
+    #import sys
+    #print "Memory (GB) taken by solution:", float(sys.getsizeof(soln))/1073741824.
+    
+    #print soln[-1]
+    
+    
+    
+    import numpy as np
+    from scipy.stats import linregress as linr  
+    print linr(nums, np.log(soln*A))
+    
+    plt.legend()
+    plt.show()
