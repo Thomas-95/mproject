@@ -1,4 +1,5 @@
 from lib import cluster_system as cs, plot_system
+import numpy as np
 
 if __name__ == "__main__":
 
@@ -7,30 +8,44 @@ if __name__ == "__main__":
     #from results import constant_update_matrix
     
     A = 6.022e23
-    h = 1e-50 * A
-    n_class = 10
+    h = 8e-40 * A
+    n_class = 50
     nums = range(1, n_class+1)
     T = 250
-    N_ITER = 2e8
+    N_ITER = 3e8
+    N_RUNS = 10
+    
+        
+    import matplotlib.pyplot as plt
+    plt.figure(1)
     
     
     import time
     start_time = time.time()
-    system = cs.ClusterSystem(n_class, T, 5.6e4)
-    soln = system.wrap_solve(h, N_ITER)
-    print "Time (s) for simulation:", time.time() - start_time
-    print "Time (s) at simulation termination:", h * N_ITER
-    import sys
-    print "Memory (GB) taken by solution:", float(sys.getsizeof(soln))/1073741824.
+    soln = np.zeros(n_class)
+    soln[0] = 5.6e4
     
-    import matplotlib.pyplot as plt
-    plt.semilogy(nums, soln[-1]*A)
+    from progressbar import ProgressBar
+    
+    pbar = ProgressBar()
+    for n in pbar(xrange(N_RUNS)):
+        system = cs.ClusterSystem(n_class, T, soln)
+        soln = system.wrap_solve(h, N_ITER)[-1]
+        if n%2 == 0:
+            plt.semilogy(nums, soln*A, label="Run %i"%(n+1))
+        
+    print "Time (s) to run simulation:", time.time() - start_time
+    print "Time (s) at simulation termination:", h * N_ITER * N_RUNS
+    #import sys
+    #print "Memory (GB) taken by solution:", float(sys.getsizeof(soln))/1073741824.
+    
+    #print soln[-1]
+    
+    
     
     import numpy as np
     from scipy.stats import linregress as linr  
-    print linr(nums, np.log(soln[-1]*A))
+    print linr(nums, np.log(soln*A))
     
-    #plt.figure(2)
-    #times = np.linspace(0, h*N_ITER, N_ITER)
-    #plt.plot(times, soln[:,-1])
+    plt.legend()
     plt.show()
